@@ -375,10 +375,28 @@ class JellyfinEmby:
                     )
                     return watched
 
+                # Fetch series IDs that have resumable (partially watched) episodes
+                resumable_episodes = self.query(
+                    f"/Users/{user_id}/Items"
+                    + f"?ParentId={library_id}&Filters=IsResumable&IncludeItemTypes=Episode&Recursive=True&Fields=SeriesId",
+                    "get",
+                )
+                resumable_series_ids = set()
+                if resumable_episodes and isinstance(resumable_episodes, dict):
+                    for ep in resumable_episodes.get("Items", []):
+                        series_id = ep.get("SeriesId")
+                        if series_id:
+                            resumable_series_ids.add(series_id)
+
                 # Filter the list of shows to only include those that have been partially or fully watched
                 watched_shows_filtered = []
                 for show in all_shows.get("Items", []):
                     if not show.get("UserData"):
+                        continue
+
+                    # Include shows with resumable episodes even if none are fully played
+                    if show.get("Id") in resumable_series_ids:
+                        watched_shows_filtered.append(show)
                         continue
 
                     played_percentage = show["UserData"].get("PlayedPercentage")
