@@ -1,27 +1,28 @@
-import os
-import traceback
 import json
+import os
 import sys
+import traceback
+from time import perf_counter, sleep
+
 from dotenv import dotenv_values
-from time import sleep, perf_counter
 from loguru import logger
 
+from src.black_white import setup_black_white_lists
+from src.connection import generate_server_connections
 from src.emby import Emby
-from src.jellyfin import Jellyfin
-from src.plex import Plex
-from src.library import setup_libraries
 from src.functions import (
+    get_env_value,
     parse_string_to_list,
     str_to_bool,
-    get_env_value,
 )
+from src.jellyfin import Jellyfin
+from src.library import setup_libraries
+from src.plex import Plex
 from src.users import setup_users
 from src.watched import (
     cleanup_watched,
     merge_server_watched,
 )
-from src.black_white import setup_black_white_lists
-from src.connection import generate_server_connections
 
 
 def configure_logger(log_file: str = "log.log", debug_level: str = "INFO") -> None:
@@ -211,7 +212,7 @@ def main_loop(env: dict[str, str | float | None]) -> None:
             logger.info(f"Server 1 syncing libraries: {server_1_libraries}")
             logger.info(f"Server 2 syncing libraries: {server_2_libraries}")
 
-            logger.info("Creating watched lists", 1)
+            logger.info("Creating watched lists")
             server_1_watched = server_1.get_watched(
                 server_1_users, server_1_libraries, server_1_watched
             )
@@ -220,10 +221,7 @@ def main_loop(env: dict[str, str | float | None]) -> None:
             server_2_watched = server_2.get_watched(server_2_users, server_2_libraries)
             logger.info("Finished creating watched list server 2")
 
-            logger.trace(f"Server 1 watched: {server_1_watched}")
-            logger.trace(f"Server 2 watched: {server_2_watched}")
-
-            logger.info("Cleaning Server 1 Watched", 1)
+            logger.info("Cleaning Server 1 Watched")
             server_1_watched_filtered = cleanup_watched(
                 server_1_watched,
                 server_2_watched,
@@ -232,7 +230,7 @@ def main_loop(env: dict[str, str | float | None]) -> None:
                 library_mapping,
             )
 
-            logger.info("Cleaning Server 2 Watched", 1)
+            logger.info("Cleaning Server 2 Watched")
             server_2_watched_filtered = cleanup_watched(
                 server_2_watched,
                 server_1_watched,
