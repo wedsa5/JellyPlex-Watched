@@ -1,8 +1,9 @@
 import argparse
 import os
 import sys
-from loguru import logger
 from collections import Counter
+
+from loguru import logger
 
 
 class MarkLogError(Exception):
@@ -86,6 +87,7 @@ def main():
         "Plex/JellyPlex-CI/jellyplex_watched/Custom TV Shows/Greatest Show Ever 3000/Episode 2",
         "Plex/JellyPlex-CI/jellyplex_watched/Movies/Five Nights at Freddy's",
         "Plex/JellyPlex-CI/jellyplex_watched/Movies/The Hunger Games: The Ballad of Songbirds & Snakes/301215",
+        "Plex/JellyPlex-CI/jellyplex_watched/TV Shows/Breaking Bad/Cat's in the Bag.../420583",
         "Plex/JellyPlex-CI/jellyplex_watched/TV Shows/Doctor Who (2005)/Rose",
         "Plex/JellyPlex-CI/jellyplex_watched/TV Shows/Doctor Who (2005)/The End of the World/300670",
         "Plex/JellyPlex-CI/jellyplex_watched/TV Shows/Monarch: Legacy of Monsters/Aftermath",
@@ -95,6 +97,7 @@ def main():
         "Emby/Emby-Server/jellyplex_watched/Movies/The Family Plan",
         "Emby/Emby-Server/jellyplex_watched/Movies/Five Nights at Freddy's",
         "Emby/Emby-Server/jellyplex_watched/Movies/The Hunger Games: The Ballad of Songbirds & Snakes/5",
+        "Emby/Emby-Server/jellyplex_watched/TV Shows/Breaking Bad/Cat's in the Bag.../7",
         "Emby/Emby-Server/jellyplex_watched/TV Shows/Doctor Who (2005)/Rose",
         "Emby/Emby-Server/jellyplex_watched/TV Shows/Doctor Who (2005)/The End of the World/5",
         "Emby/Emby-Server/jellyplex_watched/TV Shows/Monarch: Legacy of Monsters/Departure/5",
@@ -104,16 +107,19 @@ def main():
         "Plex/JellyPlex-CI/jellyplex_watched/Custom Movies/Movie Three (2022)",
         "Plex/JellyPlex-CI/jellyplex_watched/Custom TV Shows/Greatest Show Ever 3000/Episode 3",
         "Plex/JellyPlex-CI/jellyplex_watched/Movies/Tears of Steel",
+        "Plex/JellyPlex-CI/jellyplex_watched/TV Shows/Breaking Bad/...And the Bag's in the River/420796",
         "Plex/JellyPlex-CI/jellyplex_watched/TV Shows/Monarch: Legacy of Monsters/Aftermath",
         "Jellyfin/Jellyfin-Server/JellyUser/Custom Movies/Movie Three (2022)",
         "Jellyfin/Jellyfin-Server/JellyUser/Custom TV Shows/Greatest Show Ever (3000)/S01E03",
         "Jellyfin/Jellyfin-Server/JellyUser/Movies/Tears of Steel",
+        "Jellyfin/Jellyfin-Server/JellyUser/Shows/Breaking Bad/...And the Bag's in the River/7",
         "Jellyfin/Jellyfin-Server/JellyUser/Shows/Monarch: Legacy of Monsters/Parallels and Interiors/4",
     ]
     expected_plex = [
         "Jellyfin/Jellyfin-Server/JellyUser/Movies/Big Buck Bunny",
         "Jellyfin/Jellyfin-Server/JellyUser/Movies/Killers of the Flower Moon/4",
         "Jellyfin/Jellyfin-Server/JellyUser/Custom TV Shows/Greatest Show Ever (3000)/S01E01",
+        "Jellyfin/Jellyfin-Server/JellyUser/Shows/Breaking Bad/Pilot/7",
         "Jellyfin/Jellyfin-Server/JellyUser/Shows/Doctor Who/The Unquiet Dead",
         "Jellyfin/Jellyfin-Server/JellyUser/Shows/Doctor Who/Aliens of London (1)/4",
         "Jellyfin/Jellyfin-Server/JellyUser/Shows/Monarch: Legacy of Monsters/Secrets and Lies",
@@ -123,6 +129,7 @@ def main():
         "Emby/Emby-Server/jellyplex_watched/Movies/The Family Plan",
         "Emby/Emby-Server/jellyplex_watched/Movies/Killers of the Flower Moon/4",
         "Emby/Emby-Server/jellyplex_watched/Custom TV Shows/Greatest Show Ever (3000)/S01E01",
+        "Emby/Emby-Server/jellyplex_watched/TV Shows/Breaking Bad/Pilot/7",
         "Emby/Emby-Server/jellyplex_watched/TV Shows/Doctor Who (2005)/The Unquiet Dead",
         "Emby/Emby-Server/jellyplex_watched/TV Shows/Doctor Who (2005)/Aliens of London (1)/4",
         "Emby/Emby-Server/jellyplex_watched/TV Shows/Monarch: Legacy of Monsters/Secrets and Lies",
@@ -134,46 +141,8 @@ def main():
     # Remove Custom Movies/TV Shows as they should not have guids
     expected_guids = [item for item in expected_locations if "Custom" not in item]
 
-    expected_write = [
-        "Plex/JellyPlex-CI/jellyplex_watched/Custom Movies/Movie Two (2021)",
-        "Plex/JellyPlex-CI/jellyplex_watched/Custom TV Shows/Greatest Show Ever 3000/Episode 2",
-        "Plex/JellyPlex-CI/jellyplex_watched/Movies/Five Nights at Freddy's",
-        "Plex/JellyPlex-CI/jellyplex_watched/Movies/The Hunger Games: The Ballad of Songbirds & Snakes/301215",
-        "Plex/JellyPlex-CI/jellyplex_watched/TV Shows/Doctor Who (2005)/Rose",
-        "Plex/JellyPlex-CI/jellyplex_watched/TV Shows/Doctor Who (2005)/The End of the World/300670",
-        "Plex/JellyPlex-CI/jellyplex_watched/TV Shows/Monarch: Legacy of Monsters/Aftermath",
-        "Plex/JellyPlex-CI/jellyplex_watched/TV Shows/Monarch: Legacy of Monsters/Departure/300741",
-        "Jellyfin/Jellyfin-Server/JellyUser/Movies/Big Buck Bunny",
-        "Jellyfin/Jellyfin-Server/JellyUser/Movies/Killers of the Flower Moon/4",
-        "Jellyfin/Jellyfin-Server/JellyUser/Custom TV Shows/Greatest Show Ever (3000)/S01E01",
-        "Jellyfin/Jellyfin-Server/JellyUser/Shows/Doctor Who/The Unquiet Dead",
-        "Jellyfin/Jellyfin-Server/JellyUser/Shows/Doctor Who/Aliens of London (1)/4",
-        "Jellyfin/Jellyfin-Server/JellyUser/Shows/Monarch: Legacy of Monsters/Secrets and Lies",
-        "Jellyfin/Jellyfin-Server/JellyUser/Shows/Monarch: Legacy of Monsters/Parallels and Interiors/4",
-        "Jellyfin/Jellyfin-Server/JellyUser/Custom Movies/Movie One (2020)",
-        "Plex/JellyPlex-CI/jellyplex_watched/Custom Movies/Movie Three (2022)",
-        "Plex/JellyPlex-CI/jellyplex_watched/Custom TV Shows/Greatest Show Ever 3000/Episode 3",
-        "Plex/JellyPlex-CI/jellyplex_watched/Movies/Tears of Steel",
-        "Emby/Emby-Server/jellyplex_watched/Movies/Big Buck Bunny",
-        "Emby/Emby-Server/jellyplex_watched/Movies/The Family Plan",
-        "Emby/Emby-Server/jellyplex_watched/Movies/Five Nights at Freddy's",
-        "Emby/Emby-Server/jellyplex_watched/Movies/The Hunger Games: The Ballad of Songbirds & Snakes/5",
-        "Emby/Emby-Server/jellyplex_watched/Movies/Killers of the Flower Moon/4",
-        "Emby/Emby-Server/jellyplex_watched/Custom TV Shows/Greatest Show Ever (3000)/S01E01",
-        "Emby/Emby-Server/jellyplex_watched/Custom TV Shows/Greatest Show Ever (3000)/S01E02",
-        "Emby/Emby-Server/jellyplex_watched/TV Shows/Doctor Who (2005)/Rose",
-        "Emby/Emby-Server/jellyplex_watched/TV Shows/Doctor Who (2005)/The End of the World/5",
-        "Emby/Emby-Server/jellyplex_watched/TV Shows/Doctor Who (2005)/The Unquiet Dead",
-        "Emby/Emby-Server/jellyplex_watched/TV Shows/Doctor Who (2005)/Aliens of London (1)/4",
-        "Emby/Emby-Server/jellyplex_watched/TV Shows/Monarch: Legacy of Monsters/Departure/5",
-        "Emby/Emby-Server/jellyplex_watched/TV Shows/Monarch: Legacy of Monsters/Secrets and Lies",
-        "Emby/Emby-Server/jellyplex_watched/TV Shows/Monarch: Legacy of Monsters/The Way Out",
-        "Emby/Emby-Server/jellyplex_watched/Custom Movies/Movie One",
-        "Emby/Emby-Server/jellyplex_watched/Custom Movies/Movie Two",
-        "Jellyfin/Jellyfin-Server/JellyUser/Custom Movies/Movie Three (2022)",
-        "Jellyfin/Jellyfin-Server/JellyUser/Custom TV Shows/Greatest Show Ever (3000)/S01E03",
-        "Jellyfin/Jellyfin-Server/JellyUser/Movies/Tears of Steel",
-    ]
+    # Write is expected to be a unique list of values, there should not be any duplicate writes
+    expected_write = list(set(expected_emby + expected_plex + expected_jellyfin))
 
     # Determine which expected values to use based on the command-line flag
     if args.guids:
